@@ -5,6 +5,9 @@ export const state = {
     name: '',
     fullPath: cwd(),
     currentNumberPath: 0,
-    currentPath: () => normalize(state.fullPath.split(sep).slice(0, state.currentNumberPath).join(/\./)),
+    currentPath: () =>
+        state.currentNumberPath
+            ? normalize(state.fullPath.split(sep).slice(0, state.currentNumberPath).join(/\./))
+            : state.fullPath,
     dirContent: '',
 }

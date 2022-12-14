@@ -29,6 +29,35 @@ const welcome = async () => {
             state.currentNumberPath--;
             console.log(`You are currently in ${state.currentPath()}`);
         }
+        if (command.startsWith('cd')) {
+            const newDirName = command.trim().slice(2).trim();
+            const indexCurrentElement = state.fullPath.split(sep).length - Math.abs(state.currentNumberPath);
+            const nextDirName = state.fullPath.split(sep)[indexCurrentElement]
+            if (nextDirName === newDirName) {
+                state.currentNumberPath++;
+                console.log(`You are currently in ${state.currentPath()}`);
+                console.log(state.currentNumberPath);
+
+                // console.log(nextDirName);
+                // state.currentPath = () => normalize(state.fullPath.split(sep)
+                //     .slice(0, state.currentNumberPath).join(/\./))
+            }
+            // let path = state.fullPath.split(sep).slice(state.currentNumberPath + 1, state.currentNumberPath).join('');
+            // if (newDirName === path) {
+
+            // state.currentNumberPath < -1 ? state.currentNumberPath++ : state.currentNumberPath = -1;
+            // state.currentNumberPath === -1 ? state.currentNumberPath = false : state.currentNumberPath++; //подумать как лучше преобразовывать
+            // const path = state.currentPath()
+
+            // console.log(state.currentNumberPath);
+            // console.log(`You are currently in `);
+            // }
+            // console.log(state.fullPath.split(sep));
+            // console.log(state.fullPath.split(sep).splice(state.currentNumberPath).join(''));
+            // console.log(state.fullPath.split(sep));
+            // console.log(state.currentNumberPath);
+            // console.log('Косяк');
+        }
         if (command === 'ls') {
             const dataDir = await readdir(state.currentPath())
             const table = await dirContent(dataDir)
