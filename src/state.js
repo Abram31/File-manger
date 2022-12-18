@@ -1,9 +1,9 @@
-import { cwd } from 'process';
+import { chdir, cwd } from 'process';
 import { normalize, sep } from 'path';
 
 export const state = {
     name: '',
-    fullPath: cwd(),
+    fullPath: '',
     currentNumberPath: 0,
     indexCurrentElement: () => state.fullPath.split(sep).length - Math.abs(state.currentNumberPath),
     currentPath: () =>

@@ -1,19 +1,32 @@
-import { stdin, argv, exit, cwd } from 'process';
+import * as readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
+
+import { stdin, argv, exit, cwd, chdir } from 'process';
 import { normalize, sep } from 'path';
-import { readdir, stat, appendFile } from 'fs/promises';
+import { readdir, stat, appendFile, rename } from 'fs/promises';
 
 import { state } from './state.js';
 import { dirContent, FileDescription } from './dirContent.js';
-import { createReadStream, createWriteStream, rename } from 'fs';
+import { createReadStream, createWriteStream } from 'fs';
 
-import { EOL, cpus } from 'os';
+import { EOL, cpus, homedir, userInfo, arch } from 'os';
+import { dirname, resolve, parse } from 'node:path';
+import { up } from './handlers/up.js';
+import { cd } from './handlers/cd.js';
+import { cat } from './handlers/cat.js';
+import { failed } from './common/constants.js';
+import { ls } from './handlers/ls.js';
+import { add } from './handlers/add.js';
+import { rn } from './handlers/rn.js';
 
 
+const rl = readline.createInterface({ input, output });
+chdir(homedir())
 
-
-const welcome = async () => {
+const main = async () => {
     const args = argv.slice(2)[0];
     const keyItem = '--username=';
+    state.fullPath = homedir();
 
     if (args.startsWith(keyItem)) {
         state.name = args.split('=').slice(-1)
@@ -21,82 +34,57 @@ const welcome = async () => {
         console.log(`You are currently in ${state.fullPath}`);
     }
 
-    stdin.on('data', async (data) => {
+    rl.on('line', async (data) => {
+
         const args = argv.slice(2)[0];
         const command = data.toString().trim();
-        if (command === 'exit') {
+        if (command === '.exit') {
             console.log(`Thank you for using File Manager, ${state.name}, goodbye!`);
             console.log(`You are currently in ${state.fullPath}`);
             exit()
         }
         if (command === 'up') {
-            const indexCurrentElement = state.indexCurrentElement();
-            if (indexCurrentElement > 1) {
-                state.currentNumberPath--;
-            }
-            console.log(`You are currently in ${state.currentPath()}`);
+            up()
         }
         if (command.startsWith('cd')) {
-            const newDirName = command.trim().slice(2).trim();
-            const indexCurrentElement = state.indexCurrentElement();
-            const nextDirName = state.fullPath.split(sep)[indexCurrentElement]
-            if (nextDirName === newDirName) {
-                state.currentNumberPath++;
-                console.log(`You are currently in ${state.currentPath()}`);
-            } else {
-                console.error(`Directory not found`);
-            }
+            const dirPath = command.trim().slice(2).trim();
+            cd(dirPath)
         }
         if (command.startsWith('cat')) {
             const newFileName = command.trim().slice(3).trim();
-            const curPath = state.currentPath();
-            const readableStream = createReadStream(normalize(`${curPath}\\${newFileName}`));
-            readableStream.on('data', (chunk) => {
-                console.log(chunk.toString());
-            })
+            cat(newFileName)
         }
         if (command.startsWith('add')) {
             const newFileName = command.trim().slice(3).trim();
-            const curPath = state.currentPath();
-            try {
-                appendFile(normalize(`${curPath}\\ ${newFileName}`), '')
-                console.log(`New file- ${newFileName} created`);
-            } catch (err) {
-                throw new Error(err)
-            }
-            console.log(curPath);
+            add(newFileName)
         }
-        if (command.startsWith('rn')) {             /// не работает!!!
-            const curPath = state.currentPath();
-            const filesName = command.trim().slice(2).trim().split(' ');
-            console.log(filesName);
-            console.log(normalize(`${curPath}\\${filesName[0]}`), normalize(`${curPath}\\${filesName[1]}`));
-            rename(normalize(`${curPath}\\${filesName[0]}`), `${filesName[1]}`,
-                (err) => {
-                    if (err) {
-                        console.error(err);
-                    }
-                })
+        if (command.startsWith('rn')) {
+            const nameFiles = command.trim().slice(3).trim().split(' ')
+            rn(nameFiles)
         }
         if (command.startsWith('cp')) {
-            const curPath = state.currentPath();
-            const filesName = filesName.length <= 2
-                ? command.trim().slice(2).trim().split(' ')
-                : command.trim().slice(2).trim();
-            // const filesName = command.trim().split(' ');
-            console.log(filesName);
-            const readableStream = createReadStream(normalize(filesName[0]));
-            const writeableStream = createWriteStream(normalize(filesName[1]));
+            // const curPath = cwd();
+            // const curPath = state.currentPath();
+            try {
+                const filesPath = command.trim().slice(2).trim().split(' ')
+                console.log(resolve(filesPath[0]), resolve(filesPath[1]));
+                const { base } = parse(filesPath[0])
+                console.log(base);
 
-            readableStream.pipe(writeableStream)
+                const readableStream = createReadStream(resolve(filesPath[0]));
+                const writeableStream = createWriteStream(resolve(filesPath[1], base));
+
+                readableStream.pipe(writeableStream)
+            } catch {
+                failed()
+            }
+            // const filesName = command.trim().split(' ');
 
 
 
         }
-        if (command === 'ls') {
-            const dataDir = await readdir(state.currentPath())
-            const table = await dirContent(dataDir)
-            console.table(table);
+        if (command === 'ls') {   /// есть баги
+            ls()
         }
         if (command === 'check') {
             console.log(state);
@@ -122,6 +110,15 @@ const welcome = async () => {
                 console.table(new AmountCPUS(CP.length));
                 console.table(table);
             }
+            if (secondCommand === '--homedir') {
+                console.log(homedir());
+            }
+            if (secondCommand === '--username') {
+                console.log(`Username - ${userInfo().username}`);
+            }
+            if (secondCommand === '--architecture') {
+                console.log(`CPU architecture - ${arch()}`);
+            }
         }
     })
     process.on('SIGINT', () => {
@@ -130,4 +127,4 @@ const welcome = async () => {
         exit()
     })
 }
-await welcome()
+await main()

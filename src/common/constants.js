@@ -1,0 +1,1 @@
+export const failed = () => (console.error('Operation failed'))
