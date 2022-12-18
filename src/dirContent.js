@@ -2,7 +2,7 @@ import { stat } from 'fs/promises';
 import { normalize } from 'path';
 import { state } from './state.js';
 
-function FileDescription(name, type) {
+export function FileDescription(name, type) {
     this.Name = name;
     this.Type = type;
 }
