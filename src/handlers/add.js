@@ -9,9 +9,9 @@ export const add = (newFileName) => {
     const curPath = cwd();
     try {
         appendFile(normalize(`${curPath}\\${newFileName}`), '')
+        console.info(`You are currently in ${cwd()}`);
         console.info(`New file - ${ newFileName } created`);
     } catch (err) {
         failed()
     }
-    console.log(curPath);
 }

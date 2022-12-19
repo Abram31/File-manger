@@ -1,20 +1,15 @@
 import * as readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 
-import { stdin, argv, exit, cwd, chdir } from 'process';
-import { normalize, sep } from 'path';
-import { readdir, stat, appendFile, rename } from 'fs/promises';
+import { argv, exit, cwd, chdir } from 'process';
 
 import { state } from './state.js';
-import { dirContent, FileDescription } from './dirContent.js';
-import { createReadStream, createWriteStream } from 'fs';
 
-import { EOL, cpus, homedir, userInfo, arch } from 'os';
-import { dirname, resolve, parse } from 'node:path';
+import { homedir } from 'os';
 import { up } from './handlers/up.js';
 import { cd } from './handlers/cd.js';
 import { cat } from './handlers/cat.js';
-import { commands, failed, invalidInput } from './common/constants.js';
+import { commands, invalidInput } from './common/constants.js';
 import { ls } from './handlers/ls.js';
 import { add } from './handlers/add.js';
 import { rn } from './handlers/rn.js';
@@ -42,10 +37,8 @@ const main = async () => {
     }
 
     rl.on('line', async (data) => {
-        const args = argv.slice(2)[0];
         const curCommand = data.toString().trim().split(' ')[0];
-        if (Object.keys(commands).includes(curCommand)) {
-
+        if (Object.values(commands).includes(curCommand)) {
             switch (curCommand) {
                 case (commands.up):
                     up()
@@ -100,9 +93,10 @@ const main = async () => {
                     decompress(pathToFilesDecompress)
                     break;
                 case (commands.exit):
-                    console.log(`Thank you for using File Manager, ${state.name}, goodbye!`);
                     console.log(`You are currently in ${cwd()}`);
+                    console.log(`Thank you for using File Manager, ${state.name}, goodbye!`);
                     exit();
+                    break;
 
                 default: invalidInput()
 
@@ -111,46 +105,6 @@ const main = async () => {
         } else {
             invalidInput()
         }
-        // if (curCommand === 'up') {
-        //     up()
-        // }
-        // if (curCommand.startsWith('cd')) {
-        //     const dirPath = curCommand.trim().slice(2).trim();
-        //     cd(dirPath)
-        // }
-        // if (curCommand.startsWith('cat')) {
-        //     const newFileName = curCommand.trim().slice(3).trim();
-        //     cat(newFileName)
-        // }
-        // if (curCommand.startsWith('add')) {
-        //     const newFileName = curCommand.trim().slice(3).trim();
-        //     add(newFileName)
-        // }
-        // if (curCommand.startsWith('rn')) {
-        //     const nameFiles = curCommand.trim().slice(3).trim().split(' ')
-        //     rn(nameFiles)
-        // }
-        // if (curCommand.startsWith('cp')) {
-        //     const filesPath = curCommand.trim().slice(2).trim().split(' ')
-        //     cp(filesPath)
-        // }
-        // if (curCommand.startsWith('mv')) {
-        //     const filesPath = curCommand.trim().slice(2).trim().split(' ')
-        //     mv(filesPath)
-        // }
-        // if (curCommand === 'ls') {   /// есть баги
-        //     ls()
-        // }
-        // if (curCommand.startsWith('os')) {
-        //     const secondCommand = curCommand.trim().slice(2).trim();
-        //     os(secondCommand)
-        // }
-
-        // if (curCommand === '.exit') {
-        //     console.log(`Thank you for using File Manager, ${state.name}, goodbye!`);
-        //     console.log(`You are currently in ${cwd()}`);
-        //     exit()
-        // }
     })
     rl.on('SIGINT', () => {
         console.log(`You are currently in ${cwd()}`);

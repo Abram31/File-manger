@@ -4,8 +4,13 @@ import { failed } from '../common/constants.js';
 
 export const cd = (path) => {
     try {
-        path === '..' ? chdir(path) : chdir(normalize(cwd() + '\\' + path))
-        console.info(`You are currently in ${cwd()}`);
+        if (/\D:/.test(path)) {
+            chdir(normalize(path))
+            console.info(`You are currently in ${cwd()}`);
+        } else {
+            path === '..' ? chdir(path) : chdir(normalize(cwd() + '\\' + path))
+            console.info(`You are currently in ${cwd()}`);
+        }
     }
     catch {
         failed()
